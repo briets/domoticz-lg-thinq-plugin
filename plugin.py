@@ -19,6 +19,7 @@
         <ul style="list-style-type:square">
             <li>LG AP12RT NSJ</li>
             <li>LG PC12SQ</li>
+            <li>S3-M12JA2DA</li>
         </ul>
         <h4>Air-to-Water Heat Pumps (AWHP)</h4>
         <ul style="list-style-type:square">
