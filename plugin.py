@@ -389,13 +389,11 @@ class BasePlugin:
         if self.DEVICE_TYPE == "type_ac":
             # Operation
             if self.operation == 0:
-                if Devices[1].nValue != 0:
-                    Devices[1].Update(nValue = 0, sValue ="0")
-                    Domoticz.Log("operation received! Current: " + str(self.operation))
+                Devices[1].Update(nValue = 0, sValue ="0")
+                Domoticz.Debug("operation received! Current: " + str(self.operation))
             else:
-                if Devices[1].nValue != 1:
-                    Devices[1].Update(nValue = 1, sValue ="100")
-                    Domoticz.Log("operation received! Current: " + str(self.operation))
+                Devices[1].Update(nValue = 1, sValue ="100")
+                Domoticz.Debug("operation received! Current: " + str(self.operation))
 
             # Mode (opMode)
             if self.op_mode == "ACO":
@@ -414,22 +412,16 @@ class BasePlugin:
                 sValueNew = "50" #Dry
                 newImage = 16
 
-            if Devices[2].nValue != self.operation or Devices[2].sValue != sValueNew:
-                Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
-                Domoticz.Log("Mode received! Current: " + self.op_mode)
+            Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
+            Domoticz.Debug("Mode received! Current: " + self.op_mode)
 
             # Target temp (tempState.target)
-            if Devices[3].nValue != self.operation or Devices[3].sValue != self.target_temp:
-                Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
-                Domoticz.Log("tempState.target received! Current: " + self.target_temp)
+            Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
+            Domoticz.Debug("tempState.target received! Current: " + self.target_temp)
 
             # Room temp (tempState.current)
-            if Devices[4].sValue != self.room_temp:
-                Devices[4].Update(nValue = 0, sValue = self.room_temp)
-                Domoticz.Log("tempState.current received! Current: " + self.room_temp)
-            # else:
-                # Domoticz.Log("Devices[4].sValue=" + Devices[4].sValue)
-                # Domoticz.Log("room_temp=" + self.room_temp)
+            Devices[4].Update(nValue = 0, sValue = self.room_temp)
+            Domoticz.Log("tempState.current received! Current: " + self.room_temp)
 
             # Fan speed (windStrength)
             if self.wind_strength == "NATURE":
@@ -445,9 +437,8 @@ class BasePlugin:
             elif self.wind_strength == "HIGH":
                 sValueNew = "60" #6
 
-            if Devices[5].nValue != self.operation or Devices[5].sValue != sValueNew:
-                Devices[5].Update(nValue = self.operation, sValue = sValueNew)
-                Domoticz.Log("windStrength received! Current: " + self.wind_strength)
+            Devices[5].Update(nValue = self.operation, sValue = sValueNew)
+            Domoticz.Debug("windStrength received! Current: " + self.wind_strength)
 
             # Swing Horizontal (hStep)
             if self.h_step == "ALL":
@@ -469,9 +460,8 @@ class BasePlugin:
             elif self.h_step == "OFF":
                 sValueNew = "20" #None
 
-            if Devices[6].nValue != self.operation or Devices[6].sValue != sValueNew:
-                Devices[6].Update(nValue = self.operation, sValue = sValueNew)
-                Domoticz.Log("hStep received! Current: " + self.h_step)
+            Devices[6].Update(nValue = self.operation, sValue = sValueNew)
+            Domoticz.Debug("hStep received! Current: " + self.h_step)
 
             # Swing Vertival (vStep)
             if self.v_step == "ALL":
@@ -491,9 +481,8 @@ class BasePlugin:
             elif self.v_step == "SIX":
                 sValueNew = "80" #Bottom
 
-            if Devices[7].nValue != self.operation or Devices[7].sValue != sValueNew:
-                Devices[7].Update(nValue = self.operation, sValue = sValueNew)
-                Domoticz.Log("vStep received! Current: " + self.v_step)
+            Devices[7].Update(nValue = self.operation, sValue = sValueNew)
+            Domoticz.Debug("vStep received! Current: " + self.v_step)
 
             # Current Power (energy.onCurrent)
             # if (Devices[8].sValue != (str(self.power) + ";0")):
@@ -505,13 +494,11 @@ class BasePlugin:
         if self.DEVICE_TYPE == "type_awhp":
             # Operation
             if self.operation == 0:
-                if Devices[1].nValue != 0:
-                    Devices[1].Update(nValue = 0, sValue ="0")
-                    Domoticz.Log("operation received! Current: " + str(self.operation))
+                Devices[1].Update(nValue = 0, sValue ="0")
+                Domoticz.Debug("operation received! Current: " + str(self.operation))
             else:
-                if Devices[1].nValue != 1:
-                    Devices[1].Update(nValue = 1, sValue ="100")
-                    Domoticz.Log("operation received! Current: " + str(self.operation))
+                Devices[1].Update(nValue = 1, sValue ="100")
+                Domoticz.Debug("operation received! Current: " + str(self.operation))
 
             # Mode (opMode)
             if self.op_mode == "COOL":
@@ -524,29 +511,24 @@ class BasePlugin:
                 sValueNew = "30" #Heat
                 newImage = 15
 
-            if Devices[2].nValue != self.operation or Devices[2].sValue != sValueNew:
-                Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
-                Domoticz.Log("Mode received! Current: " + self.op_mode)
+            Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
+            Domoticz.Debug("Mode received! Current: " + self.op_mode)
 
             # Target temp (tempState.target)
-            if Devices[3].nValue != self.operation or Devices[3].sValue != self.target_temp:
-                Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
-                Domoticz.Log("tempState.target received! Current: " + self.target_temp)
+            Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
+            Domoticz.Debug("tempState.target received! Current: " + self.target_temp)
 
             # Hot water temp (airState.tempState.hotWaterCurrent)
-            if Devices[4].nValue != self.operation or Devices[4].sValue != self.hot_water_temp:
-                Devices[4].Update(nValue = self.operation, sValue = self.hot_water_temp)
-                Domoticz.Log("airState.tempState.hotWaterCurrent received! Current: " + self.hot_water_temp)
+            Devices[4].Update(nValue = self.operation, sValue = self.hot_water_temp)
+            Domoticz.Debug("airState.tempState.hotWaterCurrent received! Current: " + self.hot_water_temp)
 
             # Input water temp (tempState.inWaterCurrent)
-            if Devices[5].nValue != self.operation or Devices[5].sValue != self.in_water_temp:
-                Devices[5].Update(nValue = self.operation, sValue = self.in_water_temp)
-                Domoticz.Log("tempState.inWaterCurrent received! Current: " + self.in_water_temp)
+            Devices[5].Update(nValue = self.operation, sValue = self.in_water_temp)
+            Domoticz.Debug("tempState.inWaterCurrent received! Current: " + self.in_water_temp)
 
             # Output water temp (tempState.outWaterCurrent)
-            if Devices[6].nValue != self.operation or Devices[6].sValue != self.out_water_temp:
-                Devices[6].Update(nValue = self.operation, sValue = self.out_water_temp)
-                Domoticz.Log("tempState.outWaterCurrent received! Current: " + self.out_water_temp)
+            Devices[6].Update(nValue = self.operation, sValue = self.out_water_temp)
+            Domoticz.Debug("tempState.outWaterCurrent received! Current: " + self.out_water_temp)
 
 global _plugin
 _plugin = BasePlugin()
