@@ -42,6 +42,7 @@
             </options>
         </param>
         <param field="Mode2" label="Device ID" width="270px"/>
+        <param field="Mode5" label="Wideq state file" width="400px"/>
     </params>
 </plugin>
 """
@@ -49,16 +50,14 @@
 import Domoticz
 import json
 import os.path
-
 import wideq
-
 
 class BasePlugin:
     enabled = False
     heartbeat_counter = 0
-    
+
     ac_status = None
-    
+
     def __init__(self):
         # values will be filled in with onStart function
         self.DEVICE_TYPE = ""
@@ -66,6 +65,7 @@ class BasePlugin:
         self.COUNTRY = ""
         self.LANGUAGE = ""
         self.DEBUG = ""
+        self.WIDEQ_STATE_FILE = ""
 
         self.device_id = ""
         self.operation = ""
@@ -90,12 +90,14 @@ class BasePlugin:
         self.COUNTRY = Parameters["Mode3"]
         self.LANGUAGE = Parameters["Mode4"]
         self.DEBUG = Parameters["Mode6"]
+        self.WIDEQ_STATE_FILE = Parameters["Mode5"]
 
         if self.DEBUG == "Debug":
             Domoticz.Debugging(1)
 
         self.wideq_object = WideQ(country=self.COUNTRY,
-                                  language=self.LANGUAGE)
+                                  language=self.LANGUAGE
+                                  state_file=self.WIDEQ_STATE_FILE)
 
         if self.wideq_object.state_file == "":
             return False
@@ -117,60 +119,60 @@ class BasePlugin:
             Domoticz.Log("Getting AC status successful.")
             if len(Devices) == 0:
                 Domoticz.Device(Name="Operation", Unit=1, Image=16, TypeName="Switch", Used=1).Create()
-                
+
                 Options = {"LevelActions" : "|||||",
                            "LevelNames" : "|Auto|Cool|Heat|Fan|Dry",
                            "LevelOffHidden" : "true",
                            "SelectorStyle" : "0"}
-                           
+
                 Domoticz.Device(Name="Mode", Unit=2, TypeName="Selector Switch", Image=16, Options=Options, Used=1).Create()
                 Domoticz.Device(Name="Target temp", Unit=3, Type=242, Subtype=1, Image=15, Used=1).Create()
                 Domoticz.Device(Name="Room temp", Unit=4, TypeName="Temperature", Used=1).Create()
-                
+
                 Options = {"LevelActions" : "|||||||",
                            "LevelNames" : "|Auto|L2|L3|L4|L5|L6",
                            "LevelOffHidden" : "true",
                            "SelectorStyle" : "0"}
-                           
+
                 Domoticz.Device(Name="Fan speed", Unit=5, TypeName="Selector Switch", Image=7, Options=Options, Used=1).Create()
-                
-                
+
+
                 Options = {"LevelActions" : "||||||||||",
                            "LevelNames" : "|Left-Right|None|Left|Mid-Left|Centre|Mid-Right|Right|Left-Centre|Centre-Right",
                            "LevelOffHidden" : "true",
                            "SelectorStyle" : "1"}
-                           
+
                 Domoticz.Device(Name="Swing Horizontal", Unit=6, TypeName="Selector Switch", Image=7, Options=Options, Used=1).Create()
-                
-                
+
+
                 Options = {"LevelActions" : "|||||||||",
                            "LevelNames" : "|Top-Bottom|None|Top|1|2|3|4|Bottom",
                            "LevelOffHidden" : "true",
                            "SelectorStyle" : "1"}
-                           
+
                 Domoticz.Device(Name="Swing Vertical", Unit=7, TypeName="Selector Switch", Image=7, Options=Options, Used=1).Create()
                 # Domoticz.Device(Name="Power", Unit=8, TypeName="kWh", Used=1).Create()
-                
+
                 Domoticz.Log("LG ThinQ AC device created.")
-                
+
         # AWHP part
         elif self.DEVICE_TYPE == "type_awhp":
             Domoticz.Log("Getting AWHP status successful.")
             if len(Devices) == 0:
                 Domoticz.Device(Name="Operation", Unit=1, Image=16, TypeName="Switch", Used=1).Create()
-                
+
                 Options = {"LevelActions" : "||||",
                            "LevelNames" : "|Cool|AI|Heat",
                            "LevelOffHidden" : "true",
                            "SelectorStyle" : "0"}
-                           
+
                 Domoticz.Device(Name="Mode", Unit=2, TypeName="Selector Switch", Image=16, Options=Options, Used=1).Create()
                 Domoticz.Device(Name="Target temp", Unit=3, Type=242, Subtype=1, Image=15, Used=1).Create()
                 Domoticz.Device(Name="Hot water temp", Unit=4, Type=242, Subtype=1, Image=15, Used=1).Create()
                 Domoticz.Device(Name="Input water temp", Unit=5, TypeName="Temperature", Used=1).Create()
                 Domoticz.Device(Name="Output water temp", Unit=6, TypeName="Temperature", Used=1).Create()
-                
-                Domoticz.Log("LG ThinQ AWHP device created.") 
+
+                Domoticz.Log("LG ThinQ AWHP device created.")
         else:
             Domoticz.Error("Getting LG device status failed.")
 
@@ -178,32 +180,32 @@ class BasePlugin:
 
     def onStop(self):
         Domoticz.Log("onStop called")
-        
+
     def onConnect(self, Connection, Status, Description):
         pass
 
     def onMessage(self, Connection, Data):
         # Domoticz.Log("onMessage called with: "+Data["Verb"])
         # DumpDictionaryToLog(Data)
-        
+
         pass
-            
+
     def onCommand(self, Unit, Command, Level, Hue):
         # Domoticz.Debug("Command received U="+str(Unit)+" C="+str(Command)+" L= "+str(Level)+" H= "+str(Hue))
         # import web_pdb; web_pdb.set_trace()
-        
+
         # AC part
         if self.DEVICE_TYPE == "type_ac":
             if Unit == 1: # Operation
                 if Command == "On":
                     self.operation = 1
                     self.lg_device.set_on(True)
-                    Devices[1].Update(nValue = 1, sValue = "100") 
+                    Devices[1].Update(nValue = 1, sValue = "100")
                 else:
                     self.operation = 0
                     self.lg_device.set_on(False)
-                    Devices[1].Update(nValue = 0, sValue = "0") 
-                    
+                    Devices[1].Update(nValue = 0, sValue = "0")
+
             if Unit == 2: # opMode
                 newImage = 16
                 if Level == 10:
@@ -222,14 +224,14 @@ class BasePlugin:
                     self.lg_device.set_mode(wideq.ACMode.DRY)
                     newImage = 16
                 Devices[2].Update(nValue = self.operation, sValue = str(Level), Image = newImage)
-                    
+
             if Unit == 3: # SetPoint
                 # import web_pdb; web_pdb.set_trace()
                 if Devices[3].nValue != self.operation or Devices[3].sValue != Level:
                     self.lg_device.set_celsius(int(Level))
                     Domoticz.Log("new Setpoint: " + str(Level))
                     Devices[3].Update(nValue = self.operation, sValue = str(Level))
-                    
+
             if Unit == 5: # Fan speed
                 # import web_pdb; web_pdb.set_trace()
                 if Level == 10:
@@ -245,7 +247,7 @@ class BasePlugin:
                 elif Level == 60:
                     self.lg_device.set_fan_speed(wideq.ACFanSpeed.HIGH)
                 Devices[5].Update(nValue = self.operation, sValue = str(Level))
-                    
+
             if Unit == 6: # Swing horizontal
                 if Level == 10:
                     self.lg_device.set_horz_swing(wideq.ACHSwingMode.ALL)
@@ -266,7 +268,7 @@ class BasePlugin:
                 elif Level == 90:
                     self.lg_device.set_horz_swing(wideq.ACHSwingMode.RIGHT_HALF)
                 Devices[6].Update(nValue = self.operation, sValue = str(Level))
-                    
+
             if Unit == 7: # Swing vertical
                 if Level == 10:
                     self.lg_device.set_vert_swing(wideq.ACVSwingMode.ALL)
@@ -285,20 +287,20 @@ class BasePlugin:
                 elif Level == 80:
                     self.lg_device.set_vert_swing(wideq.ACVSwingMode.SIX)
                 Devices[7].Update(nValue = self.operation, sValue = str(Level))
-                
-            
+
+
         # AWHP part
         if self.DEVICE_TYPE == "type_awhp":
             if Unit == 1: # Operation
                 if Command == "On":
                     self.operation = 1
                     self.lg_device.set_on(True)
-                    Devices[1].Update(nValue = 1, sValue = "100") 
+                    Devices[1].Update(nValue = 1, sValue = "100")
                 else:
                     self.operation = 0
                     self.lg_device.set_on(False)
-                    Devices[1].Update(nValue = 0, sValue = "0") 
-                    
+                    Devices[1].Update(nValue = 0, sValue = "0")
+
             if Unit == 2: # opMode
                 newImage = 16
                 if Level == 10:
@@ -311,19 +313,19 @@ class BasePlugin:
                     self.lg_device.set_mode(wideq.ACMode.HEAT)
                     newImage = 15
                 Devices[2].Update(nValue = self.operation, sValue = str(Level), Image = newImage)
-                    
+
             if Unit == 3: # Target temp
                 if Devices[3].nValue != self.operation or Devices[3].sValue != Level:
                     self.lg_device.set_celsius(int(Level))
                     Domoticz.Log("new Target temp: " + str(Level))
                     Devices[3].Update(nValue = self.operation, sValue = str(Level))
-                    
+
             if Unit == 4: # Hot water temp
                 if Devices[4].nValue != self.operation or Devices[4].sValue != Level:
                     self.lg_device.set_hot_water(int(Level))
                     Domoticz.Log("new Hot water Target temp: " + str(Level))
                     Devices[4].Update(nValue = self.operation, sValue = str(Level))
-        
+
     def onDisconnect(self, Connection):
         Domoticz.Log("onDisconnect called")
 
@@ -335,10 +337,10 @@ class BasePlugin:
             # import web_pdb; web_pdb.set_trace()
             # to check if self.lg_device has been already read out from server
             if self.lg_device is not None:
-        
+
                 try:
                     self.lg_device_status = self.lg_device.get_status()
-                    
+
                     # AC part
                     if self.DEVICE_TYPE == "type_ac":
                         self.operation = self.lg_device_status.is_on
@@ -346,7 +348,7 @@ class BasePlugin:
                             self.operation = 1
                         else:
                             self.operation = 0
-                            
+
                         self.op_mode = self.lg_device_status.mode.name
                         self.target_temp = str(self.lg_device_status.temp_cfg_c)
                         self.room_temp = str(self.lg_device_status.temp_cur_c)
@@ -354,7 +356,7 @@ class BasePlugin:
                         self.h_step = self.lg_device_status.horz_swing.name
                         self.v_step = self.lg_device_status.vert_swing.name
                         # self.power = str(self.lg_device_status.energy_on_current)
-                        
+
                     # AWHP part
                     if self.DEVICE_TYPE == "type_awhp":
                         self.operation = self.lg_device_status.is_on
@@ -362,24 +364,24 @@ class BasePlugin:
                             self.operation = 1
                         else:
                             self.operation = 0
-                            
+
                         self.op_mode = self.lg_device_status.mode.name
                         self.target_temp = str(self.lg_device_status.temp_cfg_c)
                         self.hot_water_temp = str(self.lg_device_status.temp_hot_water_cfg_c)
                         self.in_water_temp = str(self.lg_device_status.in_water_cur_c)
                         self.out_water_temp = str(self.lg_device_status.out_water_cur_c)
-                        
+
                     self.update_domoticz()
-                        
+
                 except wideq.NotLoggedInError:
-            
+
                     # read AC parameters and Client state
                     self.lg_device = self.wideq_object.operate_device(device_id=self.DEVICE_ID)
-                            
+
         self.heartbeat_counter = self.heartbeat_counter + 1
         if self.heartbeat_counter > 6:
             self.heartbeat_counter = 0
-        
+
     def update_domoticz(self):
         # import web_pdb; web_pdb.set_trace()
         # AC part
@@ -387,13 +389,13 @@ class BasePlugin:
             # Operation
             if self.operation == 0:
                 if Devices[1].nValue != 0:
-                    Devices[1].Update(nValue = 0, sValue ="0") 
+                    Devices[1].Update(nValue = 0, sValue ="0")
                     Domoticz.Log("operation received! Current: " + str(self.operation))
             else:
                 if Devices[1].nValue != 1:
                     Devices[1].Update(nValue = 1, sValue ="100")
                     Domoticz.Log("operation received! Current: " + str(self.operation))
-                
+
             # Mode (opMode)
             if self.op_mode == "ACO":
                 sValueNew = "10" #Auto
@@ -410,16 +412,16 @@ class BasePlugin:
             elif self.op_mode == "DRY":
                 sValueNew = "50" #Dry
                 newImage = 16
-                
+
             if Devices[2].nValue != self.operation or Devices[2].sValue != sValueNew:
                 Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
                 Domoticz.Log("Mode received! Current: " + self.op_mode)
-                
+
             # Target temp (tempState.target)
             if Devices[3].nValue != self.operation or Devices[3].sValue != self.target_temp:
                 Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
                 Domoticz.Log("tempState.target received! Current: " + self.target_temp)
-                    
+
             # Room temp (tempState.current)
             if Devices[4].sValue != self.room_temp:
                 Devices[4].Update(nValue = 0, sValue = self.room_temp)
@@ -427,7 +429,7 @@ class BasePlugin:
             # else:
                 # Domoticz.Log("Devices[4].sValue=" + Devices[4].sValue)
                 # Domoticz.Log("room_temp=" + self.room_temp)
-                
+
             # Fan speed (windStrength)
             if self.wind_strength == "NATURE":
                 sValueNew = "10" #Auto
@@ -441,11 +443,11 @@ class BasePlugin:
                 sValueNew = "50" #5
             elif self.wind_strength == "HIGH":
                 sValueNew = "60" #6
-                    
+
             if Devices[5].nValue != self.operation or Devices[5].sValue != sValueNew:
                 Devices[5].Update(nValue = self.operation, sValue = sValueNew)
                 Domoticz.Log("windStrength received! Current: " + self.wind_strength)
-                
+
             # Swing Horizontal (hStep)
             if self.h_step == "ALL":
                 sValueNew = "10" #Left-Right
@@ -465,11 +467,11 @@ class BasePlugin:
                 sValueNew = "90" #Middle-Right
             elif self.h_step == "OFF":
                 sValueNew = "20" #None
-                
+
             if Devices[6].nValue != self.operation or Devices[6].sValue != sValueNew:
                 Devices[6].Update(nValue = self.operation, sValue = sValueNew)
                 Domoticz.Log("hStep received! Current: " + self.h_step)
-                
+
             # Swing Vertival (vStep)
             if self.v_step == "ALL":
                 sValueNew = "10" #Up-Down
@@ -487,11 +489,11 @@ class BasePlugin:
                 sValueNew = "70" #5
             elif self.v_step == "SIX":
                 sValueNew = "80" #Bottom
-                
+
             if Devices[7].nValue != self.operation or Devices[7].sValue != sValueNew:
                 Devices[7].Update(nValue = self.operation, sValue = sValueNew)
                 Domoticz.Log("vStep received! Current: " + self.v_step)
-                
+
             # Current Power (energy.onCurrent)
             # if (Devices[8].sValue != (str(self.power) + ";0")):
                 # import web_pdb; web_pdb.set_trace()
@@ -503,13 +505,13 @@ class BasePlugin:
             # Operation
             if self.operation == 0:
                 if Devices[1].nValue != 0:
-                    Devices[1].Update(nValue = 0, sValue ="0") 
+                    Devices[1].Update(nValue = 0, sValue ="0")
                     Domoticz.Log("operation received! Current: " + str(self.operation))
             else:
                 if Devices[1].nValue != 1:
                     Devices[1].Update(nValue = 1, sValue ="100")
                     Domoticz.Log("operation received! Current: " + str(self.operation))
-                
+
             # Mode (opMode)
             if self.op_mode == "COOL":
                 sValueNew = "10" #Auto
@@ -520,26 +522,26 @@ class BasePlugin:
             elif self.op_mode == "HEAT":
                 sValueNew = "30" #Heat
                 newImage = 15
-                
+
             if Devices[2].nValue != self.operation or Devices[2].sValue != sValueNew:
                 Devices[2].Update(nValue = self.operation, sValue = sValueNew, Image = newImage)
                 Domoticz.Log("Mode received! Current: " + self.op_mode)
-                
+
             # Target temp (tempState.target)
             if Devices[3].nValue != self.operation or Devices[3].sValue != self.target_temp:
                 Devices[3].Update(nValue = self.operation, sValue = self.target_temp)
                 Domoticz.Log("tempState.target received! Current: " + self.target_temp)
-                
+
             # Hot water temp (airState.tempState.hotWaterCurrent)
             if Devices[4].nValue != self.operation or Devices[4].sValue != self.hot_water_temp:
                 Devices[4].Update(nValue = self.operation, sValue = self.hot_water_temp)
                 Domoticz.Log("airState.tempState.hotWaterCurrent received! Current: " + self.hot_water_temp)
-                
+
             # Input water temp (tempState.inWaterCurrent)
             if Devices[5].nValue != self.operation or Devices[5].sValue != self.in_water_temp:
                 Devices[5].Update(nValue = self.operation, sValue = self.in_water_temp)
                 Domoticz.Log("tempState.inWaterCurrent received! Current: " + self.in_water_temp)
-                
+
             # Output water temp (tempState.outWaterCurrent)
             if Devices[6].nValue != self.operation or Devices[6].sValue != self.out_water_temp:
                 Devices[6].Update(nValue = self.operation, sValue = self.out_water_temp)
@@ -642,11 +644,11 @@ class WideQ:
     country: str
     language: str
 
-    def __init__(self, country, language):
+    def __init__(self, country, language, state_file = ''):
         self.country = country
         self.language = language
 
-        self.state_file = self.get_statefile_location()
+        self.state_file = state_file or self.get_statefile_location()
         if self.state_file != "":
             self.state = self.load_state_from_file(self.state_file)
 
