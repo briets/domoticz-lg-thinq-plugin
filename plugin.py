@@ -96,7 +96,7 @@ class BasePlugin:
             Domoticz.Debugging(1)
 
         self.wideq_object = WideQ(country=self.COUNTRY,
-                                  language=self.LANGUAGE
+                                  language=self.LANGUAGE,
                                   state_file=self.WIDEQ_STATE_FILE)
 
         if self.wideq_object.state_file == "":
